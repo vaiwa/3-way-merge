@@ -3,8 +3,12 @@
 3-way merging of JavaScript objects
 
 Takes 3 versions of the same object -- where version 2 and 3 are both derived from version 1 --
-and generates a 4th version, effectively merging version 2 and 3 together. When a conflict is
-detected (changes made in both version 2 and 3) changes from version 3 are used.
+and generates a 4th version, effectively merging version 2 and 3 together.
+
+When a **conflict** is detected (changes made in both version 2 and 3):
+1. delete has biggest priority
+2. changes from version 3 are used.
+
 
 ## Prototype
 
@@ -76,6 +80,20 @@ detected (changes made in both version 2 and 3) changes from version 3 are used.
         value: 123456
     }
 
+look into tests for more examples
+
 ## Requirements
 
 - `Array.isArray(object) -> Boolean` to be implemented (which it is already in modern JavaScript environments)
+
+## Edge cases
+### Merging arrays
+- Array of simple elements (no object in array) are merged by its values
+- Array of objects with attribute `id` are merged base on their id
+- Array of objects without attribute `id` are merged base on their index
+
+
+
+
+
+

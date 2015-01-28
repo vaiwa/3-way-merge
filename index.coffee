@@ -1,54 +1,90 @@
 _ = require 'lodash'
 
 
+isNull = (a) -> _.isNull a
+isUndf = (a) -> _.isUndefined a
+isEmpt = (a) -> isNull(a) or isUndf(a)
+isDelete = (fO, fA, fB) -> (not fO and (fA or fB)) or (fA and fB)
+isSimple = (a) -> not _.isObject(a)
+getIds = (a) -> _.map a, 'id'
+isMatch = (a, b) -> if isSimple(a) or isSimple(b) then (a is b) else _.isMatch a, b
+elemIn = (elem, a) -> if _.isObject elem then _.findIndex(a, (el) -> isMatch elem, el) isnt -1 else elem in a
+isArrayOfObjects = (a) -> _.findIndex(a, _.isPlainObject) isnt -1
+isArrayOfObjectsWithIds = (a) -> _.findIndex(a, (i) -> _.isPlainObject(i) and i.id?) isnt -1
+
+
 mergeArrayOfObjects = (o, a, b) ->
 	result = []
-	for k of a
-		unless a[k] not in b and a[k] in o
-			result.push a[k]
-	for k of b
-		if not k of a
-			result.push b[k]
-		else if typeof a[k] is 'object' and typeof b[k] is 'object'
-			ov = if k of o and typeof o[k] is 'object' then o[k] else {}
-			result[k] = merge ov, a[k], b[k]
-		else if b[k] not in a
-			result.push b[k]
+	for i in [0.._.max [o.length, a.length, b.length]]
+		res = merge o[i], a[i], b[i]
+		break unless res
+		result.push res
 	result
 
 
-mergeArrayOfNonObjects = (o, a, b) ->
+mergeArrayOfObjectsWithIds = (o, a, b) ->
+	oI = _.indexBy o, 'id'
+	aI = _.indexBy a, 'id'
+	bI = _.indexBy b, 'id'
+
+	result = []
+	for id in _.union getIds(o), getIds(a), getIds(b)
+		continue if isEmpt id # ignore objects without ids
+		res = merge oI[id], aI[id], bI[id]
+		result.push res unless isEmpt res
+	result
+
+
+mergeArrayOfSimples = (o, a, b) ->
+	doubleCheck = []
 	result = []
 	for elem in _.union o, a, b
-		result.push elem unless elem in o and ((elem not in a) or (elem not in b))
+		continue if isEmpt elem # skip empty elems
+		continue if _.isObject(elem) and elemIn elem, doubleCheck # skip for duplicate elems
+		doubleCheck.push elem
+		result.push elem unless elemIn(elem, o) and (not elemIn(elem, a) or not elemIn(elem, b))
 	result
 
 
 mergeArray = (o, a, b) ->
-	a = [] if not Array.isArray a
-	o = [] if not Array.isArray o
+	o = [] unless _.isArray o
+	a = [] unless _.isArray a
+	b = [] unless _.isArray b
 
-	if _.isObject _.first _.union o, a, b
+	objs = _.union o, a, b
+	if isArrayOfObjectsWithIds objs
+		mergeArrayOfObjectsWithIds o, a, b
+	else if isArrayOfObjects objs
 		mergeArrayOfObjects o, a, b
 	else
-		mergeArrayOfNonObjects o, a, b
+		mergeArrayOfSimples o, a, b
 
 
 mergeObjects = (o, a, b) ->
-	a = {} if Array.isArray a
+	o = {} unless _.isPlainObject o
+	a = {} unless _.isPlainObject a
+	b = {} unless _.isPlainObject b
+
+	oKeys = _.keys o
+	aKeys = _.keys a
+	bKeys = _.keys b
 
 	result = {}
-	result[k] = b[k] for k of b
-	for k of a
-		if not k of result
-			result[k] = a[k]
-		else if a[k] isnt result[k]
-			if typeof a[k] is 'object' and typeof b?[k] is 'object'
-				ov = if o? and k of o and typeof o[k] is 'object' then o[k] else {}
-				result[k] = merge ov, a[k], b[k]
-			else if b?[k] is o?[k]
-				result[k] = a[k]
+	for key in _.union aKeys, bKeys
+		continue if key in oKeys and ((key not in aKeys) or (key not in bKeys)) # DEL KEY
+		result[key] = merge o[key], a[key], b[key] # SET KEY
 	result
+
+
+mergeSimple = (o, a, b) ->
+	return undefined if isDelete isUndf(o), isUndf(a), isUndf(b) # DELETE
+	return null if isDelete isNull(o), isNull(a), isNull(b) # DELETE
+	if isEmpt o # ADD
+		return b if b?
+		a
+	else # CHANGE
+		return b unless isMatch b, o
+		a
 
 
 ###
@@ -60,11 +96,9 @@ Function for 3-way merge
 @return {Object} Merged result
 ###
 merge = (o, a, b) ->
-	throw new Error 'Merge missing original document' if typeof o is 'undefined'
-	throw new Error 'Merge missing current document' if typeof a is 'undefined'
-	throw new Error 'Merge missing new document' if typeof b is 'undefined'
-
-	if Array.isArray b
+	if isSimple(b) or isSimple(a)
+		mergeSimple o, a, b
+	else if _.isArray(b) or _.isArray(a)
 		mergeArray o, a, b
 	else
 		mergeObjects o, a, b
