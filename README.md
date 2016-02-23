@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/vaiwa/3-way-merge.svg?branch=master)](https://travis-ci.org/vaiwa/3-way-merge)
+[![Dependency Status](https://david-dm.org/vaiwa/3-way-merge.svg)](https://david-dm.org/vaiwa/3-way-merge)
+[![npm version](https://badge.fury.io/js/3-way-merge.svg)](http://badge.fury.io/js/3-way-merge)
+
+
 # merge(o, a, b) -> c
 
 3-way merging of JavaScript objects
@@ -6,8 +11,8 @@ Takes 3 versions of the same object -- where version 2 and 3 are both derived fr
 and generates a 4th version, effectively merging version 2 and 3 together.
 
 When a **conflict** is detected (changes made in both version 2 and 3):
-1. delete has biggest priority
-2. changes from version 3 are used.
+  - 1. delete has biggest priority
+  - 2. changes from version 3 are used.
 
 
 ## Prototype
