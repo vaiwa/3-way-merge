@@ -6,11 +6,11 @@ merge = require '../'
 describe 'Merge on Objects', ->
 
 	it 'empty no change', ->
-			o = {}
-			a = {}
-			b = {}
-			expected = {}
-			expect(expected).to.eql merge o, a, b
+		o = {}
+		a = {}
+		b = {}
+		expected = {}
+		expect(expected).to.eql merge o, a, b
 
 
 	describe 'simple', ->
@@ -149,17 +149,17 @@ describe 'Merge on Objects', ->
 
 		it 'existing nested objects', ->
 			o = key1:
-					subkey1: 'value1'
+				subkey1: 'value1'
 			a = key1:
-					subkey1: 'changed'
-					subkey2: 'value2'
+				subkey1: 'changed'
+				subkey2: 'value2'
 			b = key1:
-					subkey1: 'value1'
-					subkey3: 'value3'
+				subkey1: 'value1'
+				subkey3: 'value3'
 			expected = key1:
-					subkey1: 'changed'
-					subkey2: 'value2'
-					subkey3: 'value3'
+				subkey1: 'changed'
+				subkey2: 'value2'
+				subkey3: 'value3'
 			expect(expected).to.eql merge o, a, b
 
 
@@ -169,8 +169,8 @@ describe 'Merge on Objects', ->
 				key1: 'value1'
 				key2: 'value2'
 			b = key1:
-					subkey1: 'value1'
-					subkey2: 'value2'
+				subkey1: 'value1'
+				subkey2: 'value2'
 			expected =
 				key1:
 					subkey1: 'value1'
@@ -199,8 +199,8 @@ describe 'Merge on Objects', ->
 				key1: 'change'
 				key2: 'value2'
 			b = key1:
-					subkey1: 'value1'
-					subkey2: 'value2'
+				subkey1: 'value1'
+				subkey2: 'value2'
 			expected =
 				key1:
 					subkey1: 'value1'
